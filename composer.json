@@ -1,5 +1,5 @@
 {
-  "name": "Swiftx/Ioc",
+  "name": "swiftx/ioc",
   "description": "PHP依赖注入框架",
   "minimum-stability": "stable",
   "authors": [
