@@ -33,6 +33,4 @@
         <property name="right_delimiter" type="bool">/Library/Smarty/Plugins</property>
     </bean>
 
-    <include file="./config.demo-include.xml" />
-
 </ioc>
