@@ -43,7 +43,7 @@ abstract class Config {
      */
     public function __construct(\SimpleXMLElement $config, Container &$ioc, Config $extends=null) {
         $this->_ioc = $ioc;
-        $this->_abstract = $this->attributeBool($config, 'abstract', null);
+        $this->_abstract = $this->attributeBool($config, 'abstract', false);
         $this->_extends = $extends;
     }
 
@@ -108,11 +108,7 @@ abstract class Config {
      * @return bool
      */
     protected function _getAbstract(){
-        if($this->_abstract != null)
-            return $this->_abstract;
-        if($this->_extends != null)
-            return $this->_extends->Abstract;
-        return false;
+        return $this->_abstract;
     }
 
     /**
