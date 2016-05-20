@@ -52,6 +52,7 @@ class MyIoc extends Facade {
 | 405            | 方法调用传参不正确                                                            |
 
 
+
 ------
 
 ## 2 容器注册依赖
@@ -319,7 +320,7 @@ string,int,float,bool等基本数据类型配置，期中Property以及Value作�
 
 作者 ： 胡永强
 邮箱 ： odaytudio@gmail.com
-2016 年 05月 22日
+2016 年 05月 18日
 
 
   [Composer]: http://docs.phpcomposer.com
