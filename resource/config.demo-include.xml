@@ -1,36 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ioc driver="default">
 
-    <!-- config name="Connect" class="Swiftx.Ioc.Plugins.Normal">
-        <construct type="string">mysql:dbname=testdb;host=127.0.0.1</construct>
-        <construct type="string">root</construct>
-    </config -->
-
-    <bean id="Http.Get" class="Swiftx.Http.Get">
-
-    </bean>
-
-    <!-- 定义使用PDO连接池的数据源举例 -->
-    <bean id="DB.Default" class="PDO">
-        <!-- 指定连接数据库的参数 -->
-        <construct type="string">mysql:dbname=testdb;host=127.0.0.1</construct>
-        <construct type="string">root</construct>
-        <construct type="string">123456</construct>
-    </bean>
-
-    <!-- 定义使用Smarty对象举例 -->
-    <bean id="View.Smarty" class="Smarty" include="/Library/Smarty.class.php">
-        <property name="user" type="bool">true</property>
-        <property name="caching" type="bool">true</property>
-        <property name="PluginsDir" type="array">
-            <value type="string">/Library/Smarty/Plugins1</value>
-            <value type="string">/Library/Smarty/Plugins2</value>
-        </property>
-        <property name="CompileDir" type="bool">/Library/Smarty/Plugins</property>
-        <property name="TemplateDir" type="bool">/Library/Smarty/Plugins</property>
-        <property name="CacheDir" type="bool">/Library/Smarty/Plugins</property>
-        <property name="left_delimiter" type="bool">/Library/Smarty/Plugins</property>
-        <property name="right_delimiter" type="bool">/Library/Smarty/Plugins</property>
-    </bean>
 
 </ioc>

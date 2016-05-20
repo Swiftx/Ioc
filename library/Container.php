@@ -89,7 +89,15 @@ class Container implements \ArrayAccess {
     protected function analysisBean(\SimpleXMLElement $config, bool $cover, string $path){
         if(!$cover and isset($this->_bindTable[$config['id']]))
             throw new Exception('重复绑定Bean对象,'.$config['id'].'重复',402);
-        $this->_bindTable[$config['id']] = new Bean($config, $this);
+        if(isset($config['extends'])){
+            $extends = $config['extends'];
+            if(!isset($this->_bindTable[$extends]))
+                throw new Exception('可继承的'.$extends.'不存在', 404);
+            if($this->_bindTable[$extends] instanceof Bean)
+                $extends = $this->_bindTable[$extends];
+            else throw new Exception('可继承的'.$extends.'不存在', 404);
+        } else $extends = null;
+        $this->_bindTable[(string)$config['id']] = new Bean($config, $this, $extends);
     }
 
     /**
@@ -101,6 +109,24 @@ class Container implements \ArrayAccess {
             $this->loadConfigFile($config['file']);
         if(strpos($config['file'],'.') === 0)
             $this->loadConfigFile(dirname($path).'/'.$config['file']);
+    }
+
+    /**
+     * 是否存在绑定
+     * @param string $name
+     * @return bool
+     */
+    public function exists(string $name){
+        return isset($this->_bindTable[$name]);
+    }
+
+    /**
+     * 移除某个绑定
+     * @param string $name
+     */
+    public function remove(string $name){
+        unset($this->_bindTable[$name]);
+        unset($this->_dataTable[$name]);
     }
 
     /**
@@ -118,8 +144,11 @@ class Container implements \ArrayAccess {
         if($bindConfig instanceof Bean){
             if($bindConfig->Abstract)
                 throw new Exception('抽象的Bean,无法实例化',404);
-            if($bindConfig->Include != null)
+            if($bindConfig->Include != null) {
+                if(!file_exists($bindConfig->Include))
+                    throw new Exception('找不到文件：'.$bindConfig->Include,404);
                 include_once $bindConfig->Include;
+            }
             $class = new \ReflectionClass($bindConfig->Class);
             $instance = $class->newInstanceArgs($bindConfig->Constructs);
             foreach($bindConfig->Propertys as $key => $value)
@@ -136,7 +165,6 @@ class Container implements \ArrayAccess {
         }
         throw new Exception('绑定表类型错误', 501);
     }
-
 
     public function make(string $name){
         $name = str_replace('.','\\',$name);
@@ -174,22 +202,13 @@ class Container implements \ArrayAccess {
         $this->_dataTable[$name] = $object;
     }
 
-
-
-
-
-
-
-
-
-
     /**
      * 数组模式设置字段的值
      * @param string $offset 列名
-     * @param $value $value 值
+     * @param object $value 值
      */
     public function offsetSet($offset, $value){
-        $this->instance($offset,$value);
+        $this->instance($offset, $value);
     }
 
     /**
@@ -198,78 +217,25 @@ class Container implements \ArrayAccess {
      * @return mixed
      */
     public function offsetGet($offset){
-
+        return $this->fetch($offset);
     }
 
     /**
      * 字段是否存在
-     * @param $offset
+     * @param string $offset
      * @return bool
      */
     public function offsetExists($offset){
-    }
-
-    /**
-     * 字段是否存在
-     * @param $offset
-     * @return bool
-     */
-    public function offsetUnset($offset){
         return $this->exists($offset);
     }
 
     /**
      * 字段是否存在
-     * @param $offset
+     * @param string $offset
      * @return bool
      */
-    public function exists($offset){
-        if(isset($this->_dataTable[$offset])) return true;
-        if(isset($this->_bindTable[$offset])) return true;
-        return false;
+    public function offsetUnset($offset){
+        $this->remove($offset);
     }
 
-
-
-
-
-
-
-    /**
-     * 容器绑定准备过程
-     * @param string $name 类型名称
-     * @return bool
-     */
-    protected function bindReady($name){
-        if(empty($this->_bindTable[$name])) return true;
-        if($this->_bindTable[$name][0])
-            trigger_error($name.' 是最终类型，不能重复绑定!', E_USER_ERROR);
-        return true;
-    }
-
-    /**
-     * 从容器中获取一个类型(Factory)
-     * @param string $name	类型名称
-     */
-    protected function _makeFactory($name){
-        return $this->_bindTable[$name][2]();
-    }
-
-    /**
-     * 从容器中获取一个类型(Object)
-     * @param string $name			类型名称
-     */
-    protected function _makeObject($name){
-        $this->_dataTable[$name] = $this->_bindTable[$name][2];
-    }
-
-    /**
-     * 从容器中获取一个类型(Singleton)
-     * @param string $name			类型名称
-     */
-    protected function _makeSingleton($name){
-        $this->_bindTable[$name][2] = $this->_bindTable[$name][2]();
-        $this->_bindTable[$name][1] = 'Object';
-        return $this->_bindTable[$name][2];
-    }
 }

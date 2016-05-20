@@ -10,7 +10,8 @@ use Swiftx\Ioc\Exception;
  * @since		2015-11-08
  * @copyright	Copyright (c) 2014-2015 Swiftx Inc.
  *
- * @property bool $Abstract 是否抽象
+ * @property bool   $Abstract 是否抽象
+ * @property $this  $Extends  父类继承
  *
  */
 abstract class Config {
@@ -50,10 +51,10 @@ abstract class Config {
      * 解析字符串属性
      * @param \SimpleXMLElement $config
      * @param string $name
-     * @param string $default
-     * @return string
+     * @param mixed $default
+     * @return string|mixed
      */
-    protected function attributeString(\SimpleXMLElement $config, string $name, string $default=''){
+    protected function attributeString(\SimpleXMLElement $config, string $name, $default=null){
         return isset($config[$name])?$config[$name]:$default;
     }
 
@@ -61,11 +62,11 @@ abstract class Config {
      * 解析布尔型属性
      * @param \SimpleXMLElement $config
      * @param string $name
-     * @param string $default
-     * @return bool|string
+     * @param mixed $default
+     * @return bool|mixed
      * @throws Exception
      */
-    protected function attributeBool(\SimpleXMLElement $config, string $name, string $default=null){
+    protected function attributeBool(\SimpleXMLElement $config, string $name, $default=null){
         if(!isset($config[$name])) return $default;
         switch(strtolower($config[$name])){
             case 'true' : return true;
@@ -112,6 +113,14 @@ abstract class Config {
         if($this->_extends != null)
             return $this->_extends->Abstract;
         return false;
+    }
+
+    /**
+     * 父类继承
+     * @return null|static
+     */
+    protected function _getExtends(){
+        return $this->_extends;
     }
 
 }

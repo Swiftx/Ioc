@@ -24,20 +24,31 @@ class Bean extends Config {
      * 引入文件
      * @var string
      */
-    protected $_include;
+    protected $_include = null;
 
     /**
      * 依赖的类
      * @var string
      */
-    protected $_class;
+    protected $_class = null;
 
     /**
      * 是否单例
      * @var bool
      */
-    protected $_single;
+    protected $_single = null;
 
+    /**
+     * 构造注入
+     * @var array
+     */
+    protected $_constructs = [];
+
+    /**
+     * 属性注入
+     * @var array
+     */
+    protected $_propertys = [];
 
     /**
      * 初始化构造函数.
@@ -51,8 +62,29 @@ class Bean extends Config {
         $this->_class = $this->attributeString($config, 'class', null);
         $this->_single = $this->attributeBool($config, 'single', null);
         foreach($config->children() as $key => $value){
-
+            $method = 'analysis' . ucwords($key);
+            if(!method_exists($this, $method))
+                throw new Exception('无法解析配置节点：'.$key, 403);
+            call_user_func([$this, $method] , $value);
         }
+    }
+
+    /**
+     * 解析Construct配置节点
+     * @param \SimpleXMLElement $config
+     */
+    protected function analysisConstruct(\SimpleXMLElement $config){
+        $this->_constructs[] = new Construct($config, $this->_ioc);
+    }
+
+    /**
+     * 解析Property配置节点
+     * @param \SimpleXMLElement $config
+     */
+    protected function analysisProperty(\SimpleXMLElement $config){
+        $name = (string)$config['name'];
+        $property = new Property($config, $this->_ioc);
+        $this->_propertys[$name] = $property;
     }
 
     /**
@@ -97,7 +129,11 @@ class Bean extends Config {
      * @return array
      */
     protected function _getConstructs(){
-        return array();
+        $result = array();
+        /** @var Construct $value */
+        foreach($this->_constructs as $value)
+            $result[] = $value->Data;
+        return $result;
     }
 
     /**
@@ -105,7 +141,11 @@ class Bean extends Config {
      * @return array
      */
     protected function _getPropertys(){
-        return array();
+        $result = array();
+        /** @var Property $value */
+        foreach($this->_constructs as $key => $value)
+            $result[$key] = $value->Data;
+        return $result;
     }
 
 }

@@ -13,7 +13,7 @@
     <!-- 定义使用PDO连接池的数据源举例 -->
     <bean id="DB.Default" class="PDO">
         <!-- 指定连接数据库的参数 -->
-        <construct type="string">mysql:dbname=testdb;host=127.0.0.1</construct>
+        <construct type="string">mysql:dbname=test;host=127.0.0.1</construct>
         <construct type="string">root</construct>
         <construct type="string">123456</construct>
     </bean>
@@ -26,11 +26,11 @@
             <value type="string">/Library/Smarty/Plugins1</value>
             <value type="string">/Library/Smarty/Plugins2</value>
         </property>
-        <property name="CompileDir" type="bool">/Library/Smarty/Plugins</property>
-        <property name="TemplateDir" type="bool">/Library/Smarty/Plugins</property>
-        <property name="CacheDir" type="bool">/Library/Smarty/Plugins</property>
-        <property name="left_delimiter" type="bool">/Library/Smarty/Plugins</property>
-        <property name="right_delimiter" type="bool">/Library/Smarty/Plugins</property>
+        <property name="CompileDir" type="string">/Library/Smarty/Plugins</property>
+        <property name="TemplateDir" type="string">/Library/Smarty/Plugins</property>
+        <property name="CacheDir" type="string">/Library/Smarty/Plugins</property>
+        <property name="left_delimiter" type="string">{</property>
+        <property name="right_delimiter" type="string">}</property>
     </bean>
 
     <include file="./config.demo-include.xml" />
