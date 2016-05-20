@@ -23,12 +23,11 @@ composer global require "swiftx/ioc"
 ### 1.2 对象模式初始化
 
 ```php
-
-
-
+$ioc = new Container();
+$ioc->loadConfigFile(dirname(__DIR__).'/resource/config.demo.xml');
 ```
 
-### 1.3 装饰器模式调用
+### 1.3 （TODO）装饰器模式调用
 
 ```php
 namespace DemoProject;
@@ -38,6 +37,20 @@ class MyIoc extends Facade {
 
 }
 ```
+
+### 1.4 全局错误代码
+
+系统异常抛出错误异常类：Swiftx\Ioc\Exception,约定200~300为警告提示信息，300~400为系统异常（含第三方依赖引起的异常），400~500为用户异常（开发者不正确调用引起的异常），500以上为预留未知异常。
+
+| 属性           | 说明                                                                          |
+|:---------------|:------------------------------------------------------------------------------|
+| 400            | 配置文件不存在，或者无读取权限                                                |
+| 401            | 配置文件解析格式不正确                                                        |
+| 402            | 配置文件配置的节点存在重复，且禁止覆盖                                        |
+| 403            | 配置文件配置项数据格式不正确                                                  |
+| 404            | 配置的Bean对象不存在或无法获取                                                |
+| 405            | 方法调用传参不正确                                                            |
+
 
 ------
 
@@ -191,10 +204,113 @@ $demo = $ioc->fetch('Demo');
 $demo = $ioc['Demo'];
 ```
 
-### 3.3 注解方式解析实例
+### 3.3 (TODO)注解方式解析实例
 
 ```php
 $demo = $ioc->make('MyDemo.Demo');
+```
+
+## 4 配置文件详解
+
+Swiftx的Ioc组件通过类似于Spring的xml格式配置类型映射，也可以通过上述方法调用的方式来完成类型绑定操作，不过这里框架建议开发者尽量采用xml配置文件的方式来进行类型绑定。
+
+## 4.1 配置文件加载
+
+```php
+$ioc->loadConfigFile(dirname(__DIR__).'/resource/config.demo.xml');
+```
+
+## 4.2 配置文件基本结构
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<ioc>
+    <!-- 在此处添加配置项 -->
+</ioc>
+```
+
+## 4.2 Bean配置节点
+
+Bean配置节点是配置文件中主要的类型映射方式来进行对象管理，期中id和class属性为必填项，id用作获取该类型的调用凭据，必须唯一存在，重复定义的情况下，后载入的将对先前载入的进行覆盖，class属性表示所对应的类，配置节点可以包含construct子项和property子项， construct子项将作为构造函数的参数在实例创建过程中进行注入，property子项将以属性赋值的形式在类创建成功后自动进行注入，如：
+
+```xml
+<!-- 定义使用PDO连接池的数据源举例 -->
+<bean id="DB.Default" class="PDO">
+    <!-- 指定连接数据库的参数 -->
+    <construct type="string">mysql:dbname=test;host=127.0.0.1</construct>
+    <construct type="string">root</construct>
+    <construct type="string">123456</construct>
+</bean>
+```
+
+include属性作为可选参数，会在当类型进行实例化前进行文件包含，如下Smarty类型绑定范例，当获取Smarty实例之前，程序会预先对/Library/Smarty.class.php进行包含操作来处理文件依赖：
+
+```xml
+<!-- 定义使用Smarty对象举例 -->
+<bean id="View.Smarty" class="Smarty" include="/Library/Smarty.class.php">
+    <property name="user" type="bool">true</property>
+    <property name="caching" type="bool">true</property>
+    <property name="PluginsDir" type="array">
+        <value type="string">/Library/Smarty/Plugins1</value>
+        <value type="string">/Library/Smarty/Plugins2</value>
+    </property>
+    <property name="CompileDir" type="string">/Library/Smarty/Plugins</property>
+    <property name="TemplateDir" type="string">/Library/Smarty/Plugins</property>
+    <property name="CacheDir" type="string">/Library/Smarty/Plugins</property>
+    <property name="left_delimiter" type="string">{</property>
+    <property name="right_delimiter" type="string">}</property>
+</bean>
+```
+
+extends属性作为可选参数可以设定，通过指定目标Bean的ID可实现配置重用，另外配合abstract可选属性可以指定类型为抽象Bean，抽象Bean仅能用作继承而不能实例化，用于继承的父类型必须是Bean配置项，且用于继承的父类型必须在当前Bean定义之前进行载入，期中construct子项暂不会被继承。
+
+```xml
+<!-- 定义使用Smarty对象举例 -->
+<bean id="View.Smarty" class="Smarty" include="/Library/Smarty.class.php" abstruct='true'>
+    <property name="user" type="bool">true</property>
+    <property name="caching" type="bool">true</property>
+    <property name="PluginsDir" type="array">
+        <value type="string">/Library/Smarty/Plugins1</value>
+        <value type="string">/Library/Smarty/Plugins2</value>
+    </property>
+    <property name="CompileDir" type="string">/Library/Smarty/Plugins</property>
+    <property name="TemplateDir" type="string">/Library/Smarty/Plugins</property>
+    <property name="CacheDir" type="string">/Library/Smarty/Plugins</property>
+    <property name="left_delimiter" type="string">{</property>
+    <property name="right_delimiter" type="string">}</property>
+</bean>
+<bean id="View.Page.1" extends="View.Smarty">
+    <property name="user" type="bool">true</property>
+    <property name="caching" type="bool">false</property>
+</bean>
+<bean id="View.Page.2" extends="View.Smarty">
+    <property name="user" type="bool">true</property>
+    <property name="CompileDir" type="string">/Library/Smarty/Plugins2</property>
+</bean>
+```
+
+## 4.2 Include配置节点
+
+Include配置节点主要用于配置文件拆分，当xml绑定的类型过多时，配置文件过长将变得难以维护，此时可以用Include配置项对配置文件进行拆分到多个子配置文件中去进行管理，期中相对路径以当前位置文件所在目录为基准。
+
+```xml
+<include file="./config.demo-include.xml" />
+```
+
+## 4.2 Property，Construct，Value等统一值配置
+
+string,int,float,bool等基本数据类型配置，期中Property以及Value作为数组值配置的时候可包含一个name属性，Property的name属性表示要进行注入的对象属性，而value作为数组子项时的name属性表示所在的数组索引键名，如未指定name则默认为索引数组的元素:
+
+```xml
+<property name="user" type="bool">true</property>
+<property name="user" type="string">张三</property>
+<property name="user" type="array">
+    <value type="string">张三</value>
+    <value name="demo" type="array">
+        <value type="string">李四</value>
+        <value type="string">王五</value>
+    </value>
+</property>
 ```
 
 ------
@@ -203,7 +319,7 @@ $demo = $ioc->make('MyDemo.Demo');
 
 作者 ： 胡永强
 邮箱 ： odaytudio@gmail.com
-2016 年 05月 18日
+2016 年 05月 22日
 
 
   [Composer]: http://docs.phpcomposer.com
