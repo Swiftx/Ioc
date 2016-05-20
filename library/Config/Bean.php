@@ -145,7 +145,8 @@ class Bean extends Config {
         /** @var Property $value */
         foreach($this->_constructs as $key => $value)
             $result[$key] = $value->Data;
-        return $result;
+        if($this->_extends == null) return $result;
+        return array_merge($this->_extends->Propertys, $result);
     }
 
 }
