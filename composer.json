@@ -13,11 +13,16 @@
     }
   ],
   "require": {
-    "php": ">=5.5.0"
+    "php": ">=7.1.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "6.3.*"
   },
   "autoload": {
     "psr-4": {
-      "Swiftx\\Ioc\\": "library/"
+      "Swiftx\\Ioc\\Component\\": "library/",
+      "Swiftx\\Ioc\\Interfaces\\": "interface/",
+      "Swiftx\\Ioc\\Tests\\": "tests/"
     }
   }
 }

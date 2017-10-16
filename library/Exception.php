@@ -1,5 +1,5 @@
 <?php
-namespace Swiftx\Ioc;
+namespace Swiftx\Ioc\Component;
 /**
  * 控制反转异常类
  *
@@ -10,5 +10,7 @@ namespace Swiftx\Ioc;
  */
 class Exception extends \Exception{
 
+    // 未绑定容器
+    const NO_BIND = 001;
 
 }
